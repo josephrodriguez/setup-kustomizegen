@@ -1,0 +1,19 @@
+name: 'Setup Kustomizegen'
+description: 'Set up a specific version of the Kustomizegen'
+author: 'Jose Rodriguez'
+
+inputs:
+  kustomizegen-version:
+    description: 'The Kustomizegen version to set up.'
+    required: false
+    default: 'latest'
+
+runs:
+  using: 'node16'
+  main: 'dist/setup/index.js'
+  post: 'dist/cleanup/index.js'
+  post-if: success()
+
+branding:
+  icon: 'activity'
+  color: 'blue'  
