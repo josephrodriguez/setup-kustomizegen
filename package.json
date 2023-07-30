@@ -24,7 +24,7 @@
         "@actions/exec": "^1.0.4",
         "@actions/http-client": "^1.0.11",
         "@actions/io": "^1.0.2",
-        "@actions/tool-cache": "^1.1.0"
+        "@actions/tool-cache": "^2.0.1"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^6.2.0",
