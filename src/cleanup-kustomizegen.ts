@@ -1,12 +1,17 @@
 import fs from 'fs/promises';
 import * as core from '@actions/core';
-import {getOutputFilePath} from './path';
+import * as constants from './constants';
+import {buildDownloadURL, getFilenameFromUrl} from './urlbuilder';
 
 async function run() {
   try {
-    const releasePath = getOutputFilePath();
-    await fs.unlink(releasePath);
-    core.info(`File removed successfully: ${releasePath}`);
+    const version = core.getInput(constants.INPUT_KUSTOMIZEGEN_VERSION);
+
+    const downloadUrl = buildDownloadURL(version);
+    const outputFile = getFilenameFromUrl(downloadUrl);
+    await fs.unlink(outputFile);
+
+    core.info(`File removed successfully: ${outputFile}`);
   } catch (err) {
     core.setFailed(`Error: ${err}`);
   }

@@ -2746,13 +2746,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const promises_1 = __importDefault(__nccwpck_require__(292));
 const core = __importStar(__nccwpck_require__(186));
-const path_1 = __nccwpck_require__(737);
+const constants = __importStar(__nccwpck_require__(42));
+const urlbuilder_1 = __nccwpck_require__(0);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const releasePath = (0, path_1.getOutputFilePath)();
-            yield promises_1.default.unlink(releasePath);
-            core.info(`File removed successfully: ${releasePath}`);
+            const version = core.getInput(constants.INPUT_KUSTOMIZEGEN_VERSION);
+            const downloadUrl = (0, urlbuilder_1.buildDownloadURL)(version);
+            const outputFile = (0, urlbuilder_1.getFilenameFromUrl)(downloadUrl);
+            yield promises_1.default.unlink(outputFile);
+            core.info(`File removed successfully: ${outputFile}`);
         }
         catch (err) {
             core.setFailed(`Error: ${err}`);
@@ -2769,7 +2772,64 @@ else {
 
 /***/ }),
 
-/***/ 737:
+/***/ 42:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.INPUT_KUSTOMIZEGEN_VERSION = void 0;
+exports.INPUT_KUSTOMIZEGEN_VERSION = 'kustomizegen-version';
+
+
+/***/ }),
+
+/***/ 300:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getArch = exports.getOSPlatform = void 0;
+const os_1 = __importDefault(__nccwpck_require__(37));
+function getOSPlatform() {
+    const platform = os_1.default.platform();
+    switch (platform) {
+        case 'win32':
+            return 'windows';
+        case 'darwin':
+            return 'darwin';
+        case 'linux':
+            return 'linux';
+        default:
+            throw new Error('Unable to determine the OS platform.');
+    }
+}
+exports.getOSPlatform = getOSPlatform;
+function getArch() {
+    let arch = os_1.default.arch();
+    switch (arch) {
+        case 'x64':
+            arch = 'amd64';
+            break;
+        case 'x32':
+            arch = '386';
+            break;
+        case 'arm':
+            arch = 'armv6l';
+            break;
+    }
+    return arch;
+}
+exports.getArch = getArch;
+
+
+/***/ }),
+
+/***/ 0:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -2798,53 +2858,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getOutputFilePath = void 0;
+exports.buildDownloadURL = exports.getFilenameFromUrl = void 0;
+const path_1 = __nccwpck_require__(17);
 const system = __importStar(__nccwpck_require__(300));
-function getOutputFilePath() {
-    const platform = system.getPlatform();
+function getFilenameFromUrl(url) {
+    const parsedPath = (0, path_1.parse)(url);
+    return parsedPath.base;
+}
+exports.getFilenameFromUrl = getFilenameFromUrl;
+function buildDownloadURL(version) {
+    const releaseVersion = version ? `v${version}` : 'latest';
     const arch = system.getArch();
-    return `kustomizegen_${platform}_${arch}.tar.gz`;
+    const platform = system.getOSPlatform();
+    const downloadURL = `https://github.com/josephrodriguez/kustomizegen/releases/download/${releaseVersion}/kustomizegen_${platform}_${arch}.tar.gz`;
+    return downloadURL;
 }
-exports.getOutputFilePath = getOutputFilePath;
-
-
-/***/ }),
-
-/***/ 300:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getArch = exports.getPlatform = void 0;
-const os_1 = __importDefault(__nccwpck_require__(37));
-function getPlatform() {
-    let platform = os_1.default.platform();
-    if (platform === 'win32') {
-        platform = 'windows';
-    }
-    return platform;
-}
-exports.getPlatform = getPlatform;
-function getArch() {
-    let arch = os_1.default.arch();
-    switch (arch) {
-        case 'x64':
-            arch = 'amd64';
-            break;
-        case 'x32':
-            arch = '386';
-            break;
-        case 'arm':
-            arch = 'armv6l';
-            break;
-    }
-    return arch;
-}
-exports.getArch = getArch;
+exports.buildDownloadURL = buildDownloadURL;
 
 
 /***/ }),

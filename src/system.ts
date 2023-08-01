@@ -1,13 +1,17 @@
 import os from 'os';
 
-export function getPlatform(): string {
-  let platform: string = os.platform();
-
-  if (platform === 'win32') {
-    platform = 'windows';
+export function getOSPlatform(): string {
+  const platform = os.platform();
+  switch (platform) {
+    case 'win32':
+      return 'windows';
+    case 'darwin':
+      return 'darwin';
+    case 'linux':
+      return 'linux';
+    default:
+      throw new Error('Unable to determine the OS platform.');
   }
-
-  return platform;
 }
 
 export function getArch(): string {
