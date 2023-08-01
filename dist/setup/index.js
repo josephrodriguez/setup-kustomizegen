@@ -5981,7 +5981,7 @@ exports.INPUT_KUSTOMIZEGEN_VERSION = 'kustomizegen-version';
 
 /***/ }),
 
-/***/ 5307:
+/***/ 978:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -6022,112 +6022,64 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.downloadRelease = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const https_1 = __importDefault(__nccwpck_require__(5687));
 const core = __importStar(__nccwpck_require__(2186));
-// Client represents a GitHub client.
-class GithubClient {
-    // Add any client-specific fields here, if needed.
-    // NewClient creates a new GitHub client.
-    constructor() {
-        // Add any initialization logic for the client here, if needed.
-    }
-    // DownloadRelease downloads a file from the given URL and saves it to the specified file path.
-    downloadRelease(version, arch, filePath) {
-        return __awaiter(this, void 0, void 0, function* () {
-            core.info(`Attempting to download ${version}..`);
-            const downloadURL = `https://github.com/josephrodriguez/kustomizegen/releases/download/v${version}/kustomizegen_${arch}.tar.gz`;
-            core.info(`Acquiring ${version} - ${arch} from ${downloadURL}`);
-            return new Promise((resolve, reject) => {
-                this.download(downloadURL, filePath)
+const urlbuilder_1 = __nccwpck_require__(6000);
+function downloadRelease(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const downloadURL = (0, urlbuilder_1.buildDownloadURL)(version);
+        const fileName = (0, urlbuilder_1.getFilenameFromUrl)(downloadURL);
+        core.info(`Attempting to download ${downloadURL}...`);
+        return new Promise((resolve, reject) => {
+            download(downloadURL, fileName)
+                .then(() => resolve(downloadURL))
+                .catch(err => reject(err));
+        });
+    });
+}
+exports.downloadRelease = downloadRelease;
+function download(url, filePath) {
+    return new Promise((resolve, reject) => {
+        const file = fs_1.default.createWriteStream(filePath);
+        https_1.default
+            .get(url, response => {
+            if (response.statusCode === 302 || response.statusCode === 301) {
+                const redirectURL = response.headers.location;
+                response.destroy();
+                if (!redirectURL) {
+                    reject(new Error('Redirect URL is missing'));
+                    return;
+                }
+                download(redirectURL, filePath)
                     .then(() => resolve())
                     .catch(err => reject(err));
-            });
-        });
-    }
-    download(url, filePath) {
-        return new Promise((resolve, reject) => {
-            const file = fs_1.default.createWriteStream(filePath);
-            https_1.default
-                .get(url, response => {
-                if (response.statusCode === 302 || response.statusCode === 301) {
-                    const redirectURL = response.headers.location;
-                    response.destroy();
-                    if (!redirectURL) {
-                        reject(new Error('Redirect URL is missing'));
-                        return;
-                    }
-                    this.download(redirectURL, filePath)
-                        .then(() => resolve())
-                        .catch(err => reject(err));
-                }
-                else if (response.statusCode !== 200) {
-                    reject(new Error(`Failed to download the release, status code: ${response.statusCode}`));
-                }
-                else {
-                    response.pipe(file);
-                    file.on('finish', () => {
-                        file.close();
-                        core.info('Download complete!');
-                        resolve();
-                    });
-                    response.on('error', err => {
-                        fs_1.default.unlink(filePath, () => {
-                            reject(new Error(`Failed to write the release file: ${err.message}`));
-                        });
-                    });
-                }
-            })
-                .on('error', err => {
-                fs_1.default.unlink(filePath, () => {
-                    reject(new Error(`Failed to get the file: ${err.message}`));
+            }
+            else if (response.statusCode !== 200) {
+                reject(new Error(`Failed to download the release, status code: ${response.statusCode}`));
+            }
+            else {
+                response.pipe(file);
+                file.on('finish', () => {
+                    file.close();
+                    core.info('Download complete!');
+                    resolve();
                 });
+                response.on('error', err => {
+                    fs_1.default.unlink(filePath, () => {
+                        reject(new Error(`Failed to write the release file: ${err.message}`));
+                    });
+                });
+            }
+        })
+            .on('error', err => {
+            fs_1.default.unlink(filePath, () => {
+                reject(new Error(`Failed to get the file: ${err.message}`));
             });
         });
-    }
+    });
 }
-exports["default"] = GithubClient;
-
-
-/***/ }),
-
-/***/ 5737:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getOutputFilePath = void 0;
-const system = __importStar(__nccwpck_require__(4300));
-function getOutputFilePath() {
-    const platform = system.getPlatform();
-    const arch = system.getArch();
-    return `kustomizegen_${platform}_${arch}.tar.gz`;
-}
-exports.getOutputFilePath = getOutputFilePath;
 
 
 /***/ }),
@@ -6228,30 +6180,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const constants = __importStar(__nccwpck_require__(9042));
-const system = __importStar(__nccwpck_require__(4300));
-const github_client_1 = __importDefault(__nccwpck_require__(5307));
+const github_1 = __nccwpck_require__(978);
 const compression_1 = __nccwpck_require__(6802);
 const permissions_1 = __nccwpck_require__(2036);
-const path_1 = __nccwpck_require__(5737);
+const urlbuilder_1 = __nccwpck_require__(6000);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const version = core.getInput(constants.INPUT_KUSTOMIZEGEN_VERSION);
-            const arch = system.getArch();
-            const releasePath = (0, path_1.getOutputFilePath)();
-            core.info(`Resolving Kustomizegen binary ${arch} - ${version}`);
-            const client = new github_client_1.default();
-            yield client.downloadRelease(version, arch, releasePath);
-            core.info(`Saved Kustomizegen file: ${releasePath}`);
+            core.info(`Resolving Kustomizegen binary version: ${version}`);
+            const downloadUrl = yield (0, github_1.downloadRelease)(version);
+            const outputFile = (0, urlbuilder_1.getFilenameFromUrl)(downloadUrl);
+            core.info(`Saved Kustomizegen file: ${outputFile}`);
             core.info('Extracting Kustomizegen file...');
-            const binaryFilePath = yield (0, compression_1.extractTarGzToLocalbin)(releasePath);
+            const binaryFilePath = yield (0, compression_1.extractTarGzToLocalbin)(outputFile);
             core.info('Set executable permissions...');
             yield (0, permissions_1.setExecutablePermission)(binaryFilePath);
             core.info('Completed');
@@ -6281,16 +6227,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getArch = exports.getPlatform = void 0;
+exports.getArch = exports.getOSPlatform = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
-function getPlatform() {
-    let platform = os_1.default.platform();
-    if (platform === 'win32') {
-        platform = 'windows';
+function getOSPlatform() {
+    const platform = os_1.default.platform();
+    switch (platform) {
+        case 'win32':
+            return 'windows';
+        case 'darwin':
+            return 'darwin';
+        case 'linux':
+            return 'linux';
+        default:
+            throw new Error('Unable to determine the OS platform.');
     }
-    return platform;
 }
-exports.getPlatform = getPlatform;
+exports.getOSPlatform = getOSPlatform;
 function getArch() {
     let arch = os_1.default.arch();
     switch (arch) {
@@ -6307,6 +6259,55 @@ function getArch() {
     return arch;
 }
 exports.getArch = getArch;
+
+
+/***/ }),
+
+/***/ 6000:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.buildDownloadURL = exports.getFilenameFromUrl = void 0;
+const path_1 = __nccwpck_require__(1017);
+const system = __importStar(__nccwpck_require__(4300));
+function getFilenameFromUrl(url) {
+    const parsedPath = (0, path_1.parse)(url);
+    return parsedPath.base;
+}
+exports.getFilenameFromUrl = getFilenameFromUrl;
+function buildDownloadURL(version) {
+    const releaseVersion = version ? `v${version}` : 'latest';
+    const arch = system.getArch();
+    const platform = system.getOSPlatform();
+    const downloadURL = `https://github.com/josephrodriguez/kustomizegen/releases/download/${releaseVersion}/kustomizegen_${platform}_${arch}.tar.gz`;
+    return downloadURL;
+}
+exports.buildDownloadURL = buildDownloadURL;
 
 
 /***/ }),

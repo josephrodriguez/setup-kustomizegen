@@ -15,5 +15,5 @@ runs:
   post-if: success()
 
 branding:
-  icon: 'activity'
+  icon: 'actions'
   color: 'blue'  
