@@ -2867,7 +2867,9 @@ function getFilenameFromUrl(url) {
 }
 exports.getFilenameFromUrl = getFilenameFromUrl;
 function buildDownloadURL(version) {
-    const releaseVersion = version !== undefined && version !== '' && version !== 'latest' ? `v${version}` : 'latest';
+    const releaseVersion = version !== undefined && version !== '' && version !== 'latest'
+        ? `v${version}`
+        : 'latest';
     const arch = system.getArch();
     const platform = system.getOSPlatform();
     const downloadURL = `https://github.com/josephrodriguez/kustomizegen/releases/download/${releaseVersion}/kustomizegen_${platform}_${arch}.tar.gz`;
