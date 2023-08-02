@@ -7,7 +7,10 @@ export function getFilenameFromUrl(url: string): string {
 }
 
 export function buildDownloadURL(version: string | undefined): string {
-  const releaseVersion = version ? `v${version}` : 'latest';
+  const releaseVersion =
+    version !== undefined && version !== '' && version !== 'latest'
+      ? `v${version}`
+      : 'latest';
   const arch = system.getArch();
   const platform = system.getOSPlatform();
 

@@ -30,6 +30,15 @@ describe('buildDownloadURL', () => {
     expect(buildDownloadURL(undefined)).toBe(expectedURL);
   });
 
+  it('should build the download URL for the latest version (explicit) on linux amd64', () => {
+    system.getArch.mockReturnValue('amd64');
+    system.getOSPlatform.mockReturnValue('linux');
+    const version = 'latest';
+    const expectedURL =
+      'https://github.com/josephrodriguez/kustomizegen/releases/download/latest/kustomizegen_linux_amd64.tar.gz';
+    expect(buildDownloadURL(version)).toBe(expectedURL);
+  });
+
   it('should build the download URL for the specified version on darwin arm64', () => {
     system.getArch.mockReturnValue('arm64');
     system.getOSPlatform.mockReturnValue('darwin');
@@ -47,6 +56,15 @@ describe('buildDownloadURL', () => {
     expect(buildDownloadURL(undefined)).toBe(expectedURL);
   });
 
+  it('should build the download URL for the latest version (explicit) on darwin arm64', () => {
+    system.getArch.mockReturnValue('arm64');
+    system.getOSPlatform.mockReturnValue('darwin');
+    const version = 'latest';
+    const expectedURL =
+      'https://github.com/josephrodriguez/kustomizegen/releases/download/latest/kustomizegen_darwin_arm64.tar.gz';
+    expect(buildDownloadURL(version)).toBe(expectedURL);
+  });
+
   it('should build the download URL for a specific version on windows amd64', () => {
     system.getArch.mockReturnValue('amd64');
     system.getOSPlatform.mockReturnValue('windows');
@@ -62,5 +80,14 @@ describe('buildDownloadURL', () => {
     const expectedURL =
       'https://github.com/josephrodriguez/kustomizegen/releases/download/latest/kustomizegen_windows_amd64.tar.gz';
     expect(buildDownloadURL(undefined)).toBe(expectedURL);
+  });
+
+  it('should build the download URL for the latest version (explicit) on windows amd64', () => {
+    system.getArch.mockReturnValue('amd64');
+    system.getOSPlatform.mockReturnValue('windows');
+    const version = 'latest';
+    const expectedURL =
+      'https://github.com/josephrodriguez/kustomizegen/releases/download/latest/kustomizegen_windows_amd64.tar.gz';
+    expect(buildDownloadURL(version)).toBe(expectedURL);
   });
 });
